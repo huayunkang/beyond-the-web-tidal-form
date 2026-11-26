@@ -311,7 +311,7 @@
     uniform sampler2D uA;
     uniform float uMul;
     void main(){outColor=vec4(texture(uA,uv).rgb*uMul,1);}`,
-    show: `${seat}
+    show: `${seat}${window.EditionTypes.causticGLSL}
     uniform sampler2D uA;
     uniform vec2 uPix;
     uniform float uFrame; uniform sampler2D uType, uVel; uniform float uAspect;
@@ -343,13 +343,13 @@
       vec2 letter=uv-vec2(.5,.53);
       letter*=vec2(1.08,1.08*2.7/uAspect);
       letter+=vec2(.5)+clamp(vel*vec2(.00165,.0034),vec2(-.12),vec2(.12))+g*.068;
-      float glyph=0.;
-      if(all(greaterThanEqual(letter,vec2(0)))&&all(lessThanEqual(letter,vec2(1)))) glyph=texture(uType,letter).r;
+      float glyph=0.; float focusGain=1.;
+      if(all(greaterThanEqual(letter,vec2(0)))&&all(lessThanEqual(letter,vec2(1)))) { vec3 ray=editionCaustic(uv*vec2(uAspect,1.)*900.,uFrame/12.,108.,min(.64,.12+.04*length(vel))); letter+=ray.xy/vec2(1440.,512.);focusGain=ray.z;glyph=texture(uType,letter).r; }
       float ridges=.5+.5*sin(d*62.+dot(uv,vec2(26.,38.)));
       float glint=pow(max(dot(N,normalize(vec3(-.46,.36,.99))),0.),36.);
       float grain=dust(gl_FragCoord.xy)-.5;
       vec3 paper=mix(vec3(.105,.032,.054),vec3(.17,.054,.06),uv.x*.6+uv.y*.4);
-      paper=mix(paper,vec3(.99,.80,.67),glyph*.87);
+      paper=mix(paper,vec3(.99,.80,.67)*mix(1.,focusGain,.63),glyph*.87);
       vec3 enamel=rgb*(.72+.47*nDot)+vec3(.44,.67,.86)*glint*.53+edge*(.11+.25*ridges);
       vec3 color=mix(paper,enamel,cover*.94)+grain*.018;
       color+=cover*glyph*(.1+.31*edge)*vec3(1.,.92,.70);
@@ -372,7 +372,7 @@
     const card=document.createElement('canvas');card.width=1440;card.height=512;
     const pen=card.getContext('2d');pen.fillStyle='#000';pen.fillRect(0,0,1440,512);
     pen.fillStyle='#fff';pen.textAlign='center';pen.textBaseline='middle';
-    pen.font='bold 404px Georgia,serif';pen.save();pen.translate(720,244);pen.scale(1300/pen.measureText('CHAOS').width,1);pen.fillText('CHAOS',0,0);pen.restore();
+    pen.font='500 448px EditionRoman,Georgia,serif';pen.save();pen.translate(720,244);pen.scale(1300/pen.measureText('CHAOS').width,1);pen.lineWidth=4.6;pen.strokeStyle='#fff';pen.lineJoin='round';pen.strokeText('CHAOS',0,0);pen.fillText('CHAOS',0,0);pen.restore();
     const letters={tex:gl.createTexture()};gl.bindTexture(gl.TEXTURE_2D,letters.tex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,card);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
     for(const k of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR);

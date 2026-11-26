@@ -1,0 +1,47 @@
+{
+  "song": {
+    "repo": "adobe-fonts/source-han-serif",
+    "commit": "7889f11bf31170b5d092a083b357c8c8130f89e0",
+    "path": "SubsetOTF/CN/SourceHanSerifCN-Regular.otf",
+    "license": "LICENSE.txt",
+    "bytes": 11626108,
+    "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d",
+    "licenseFile": "song-OFL.txt"
+  },
+  "sans": {
+    "repo": "adobe-fonts/source-han-sans",
+    "commit": "a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2",
+    "path": "SubsetOTF/CN/SourceHanSansCN-Regular.otf",
+    "license": "LICENSE.txt",
+    "bytes": 8429224,
+    "sha256": "e2bc8a2e7f37474b774fff8db758681ece40bb6947a90d571bce9dd60671a8e4",
+    "licenseFile": "sans-OFL.txt"
+  },
+  "roman": {
+    "repo": "CatharsisFonts/Cormorant",
+    "commit": "016784836d2ad47bc4c62b7f504a0a5875d85aeb",
+    "path": "fonts/otf/Cormorant-Medium.otf",
+    "license": "OFL.txt",
+    "bytes": 344012,
+    "sha256": "bafca8f24e99ada6b334ec86b9b1641f925e279fbdee20f4e11d71b7ae7fd732",
+    "licenseFile": "roman-OFL.txt"
+  },
+  "italic": {
+    "repo": "CatharsisFonts/Cormorant",
+    "commit": "016784836d2ad47bc4c62b7f504a0a5875d85aeb",
+    "path": "fonts/otf/Cormorant-MediumItalic.otf",
+    "license": "OFL.txt",
+    "bytes": 216600,
+    "sha256": "9fbf09c8ddba22fd0b09b67155d8d0783ee8cde60d5bd58824178e45990dcb45",
+    "licenseFile": "roman-OFL.txt"
+  },
+  "mono": {
+    "repo": "IBM/plex",
+    "commit": "ba3013d72a8419a22c758cc51c44e04ac7ea565b",
+    "path": "packages/plex-mono/fonts/complete/ttf/IBMPlexMono-Regular.ttf",
+    "license": "LICENSE.txt",
+    "bytes": 173052,
+    "sha256": "7c6fbddca4b700be918f5f6183d9bd4464fa427fe435f0b480d77fe2bb8c5a43",
+    "licenseFile": "mono-OFL.txt"
+  }
+}

@@ -1,0 +1,6 @@
+/* Derived type edition; full OFL texts and provenance in this folder. */
+@font-face{font-family:EditionSong;src:url('song.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap;}
+@font-face{font-family:EditionSans;src:url('sans.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap;}
+@font-face{font-family:EditionRoman;src:url('roman.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap;}
+@font-face{font-family:EditionRoman;src:url('italic.woff2') format('woff2');font-style:italic;font-weight:500;font-display:swap;}
+@font-face{font-family:EditionMono;src:url('mono.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap;}

@@ -138,7 +138,7 @@ function specimen(size,key){
 }
 function letterTexture(gl){
  const c=document.createElement('canvas');c.width=512;c.height=128;
- const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.fillStyle='white';x.font='italic 54px Georgia,serif';x.fillText('Emergence',256,65);
+ const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.fillStyle='white';x.font='italic 500 60px EditionRoman,Georgia,serif';x.fillText('Emergence',256,65);
  const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
  for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);return t;

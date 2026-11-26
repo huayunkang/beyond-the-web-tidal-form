@@ -1,4 +1,4 @@
-# 《超越界面：秩序与混沌》V2 · 第三方技术与版权
+# 《超越界面：秩序与混沌》字版 · 第三方技术与版权
 V2 原创的是展览的思想结构、手势编排、字模/几何/材质、显微光照、感知错觉、跨幕物质留印、声音和操作设计，不是下面的求解算法或引擎。全部静态运行资产随网页一并分发，没有第三方 CDN。
 
 |作者 / 上游固定源|许可|实际留下什么、改了什么|
@@ -10,4 +10,10 @@ V2 原创的是展览的思想结构、手势编排、字模/几何/材质、显
 |[Iwan Kelaiah · WebGL Fractal Explorer](https://github.com/ikelaiah/webgl-fractal-explorer/tree/7e4bbe79c7785ff36fd37a61ca0e68f8a70da3c5)，2026|[MIT](licenses/fractal-explorer-MIT.txt)|Ⅵ 保留 Julia 二次轨道迭代/陷阱核，改为逐尺度蚀刻、原作印像、频带/种子/塑形控制。不是原浏览器控制台、曼德博海报或预渲染宇宙。|
 |[gl-transitions contributors](https://github.com/gl-transitions/gl-transitions/tree/22326e3d2099a0ccdbeeebd091d151182c2e7669)，Eke Péter：CrossWarp；pschroen：DirectionalWarp|[MIT](licenses/gl-transitions-MIT.txt)|保留两段原片元函数；输入不是示例 JPEG，而是当前实绘的出场与入场纹理。Ⅴ 另留长边最多768的离场帧，供Ⅵ取样。|
 
-V1 的 r122 Verlet 布带已退出本版正式六幕；旧版原实现及其 MIT 许可完整保存在 V1 封存中。系统字体仅在用户设备上调用，不打包字体。全部数字形体、纹理、声音均可在浏览器本地生成，不含外部人物、照片、商标、音轨、模型或商业站资源。开发工具 esbuild (Evan Wallace / MIT)、Playwright、Chrome 与 FFmpeg 不作为网页运行依赖。参照来源仅作方法研究，不将浏览器可访问等同于素材授权。
+V1 的 r122 Verlet 布带已退出本版正式六幕；旧版原实现及其 MIT 许可完整保存在 V1 封存中。本字版在本地托管下文列明的 OFL 字体子集。全部数字形体、纹理、声音均可在浏览器本地生成，不含外部人物、照片、商标、第三方音轨、示例模型或商业站资源。开发工具 esbuild (Evan Wallace / MIT)、Playwright、Chrome 与 FFmpeg 不作为网页运行依赖。参照来源仅作方法研究，不将浏览器可访问等同于素材授权。
+
+## 字版新增 · 代码与字型
+- [Codrops TextCharacterAnimations · 固定版](https://github.com/codrops/TextCharacterAnimations/tree/ac0fe97a4e4f786ef5d514d7030b6eb5855da05b)，[MIT 许可原文](licenses/TextCharacterAnimations.MIT.txt)。type-grid.js 直接摘取 Caustics 的六组波方向、波数、速度/偏相，斜率、二阶曲率、两步反推及雅可比聚光；将输入改为与真实求解速度有关、只作用于第二幕的本地印字。没有搬用作者的字体和示例素材。
+- [Codrops RepetitiveTypography · 固定版](https://github.com/codrops/RepetitiveTypography/tree/9bd910cadc638ac3a855690600eecf485504b6e1)，[MIT 许可原文](licenses/Codrops-RepetitiveTypography-MIT.txt)。type-motion.js 保留原版奇偶字符出入、中心成对延迟、行错拍与 expo 节奏；60行压成4个尺度，改由场景已有时钟调度。没有打包 GSAP、原版字体、摄影或示例整页。
+- 采用 [Adobe Source Han Serif](https://github.com/adobe-fonts/source-han-serif) 和 [Source Han Sans](https://github.com/adobe-fonts/source-han-sans) 简体字面、[Cormorant](https://github.com/CatharsisFonts/Cormorant) Medium 和 Medium Italic、[IBM Plex](https://github.com/IBM/plex) Mono Regular：均为 SIL Open Font License 1.1。保留版权、来源与许可；子集改为非保留名。固定提交、原文件位置和字节指纹见[字体来源清单](fonts/sources.json)。许可分别为[思源宋体](fonts/song-OFL.txt)、[思源黑体](fonts/sans-OFL.txt)、[Cormorant 两款](fonts/roman-OFL.txt)、[IBM Plex Mono](fonts/mono-OFL.txt)。字体不是本项目设计的；所有字体与网页同源。朱雀仿宋与 Space Grotesk 只在本地原型做实际比较，不随作品分发。
+- Grid System、AnimatedGridLayout、SuperfluidLayout、TypographyMotion、ScrollBlurTypography、type-o 的完整工具或网站不进入发布包。具体研究与演示方式在本地 research 记录，造型、剧本与未列明的图像字体不能由某个储存库的代码许可自动授权。
