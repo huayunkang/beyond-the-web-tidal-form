@@ -1,35 +1,44 @@
 (()=>{
 'use strict';
-const $=s=>document.querySelector(s),stage=$('#stage'),simple=$('#simple'),all=[...document.querySelectorAll('[data-act]')],media=matchMedia('(prefers-reduced-motion:reduce)'),query=new URLSearchParams(location.search),sound=BeyondScore();
+const $=s=>document.querySelector(s),stage=$('#stage'),simple=$('#simple'),all=[],media=matchMedia('(prefers-reduced-motion:reduce)'),query=new URLSearchParams(location.search),sound=BeyondScore();
 const acts=[
- ['凝核','GENESIS','I','沙在闭合之前，先记住手的形状。','按住拖动，拨开粒群','确定性粒群沿同一个扭结沉积。每帧的投影、指尖涡场和点精灵混合在 GPU 上计算。'],
- ['渗流','FLOW','II','把边界交给流动。','沿画面划动，注入颜料与动量','半浮点双缓冲保存速度与染料；旋度、散度、压力投影和平流按步求解。不是视频。'],
- ['铸光','MATTER','III','光穿过的地方，留下另一层壳。','拖动转面；滚轮或双指改变距离','同一扭结被切成金属铸段与玻璃窗。清漆层、环境反射与透射通道独立计算，前幕颜色进入铸面。'],
- ['张力','FORCE','IV','松手之后，形状还在回答。','抓住织带拖开，再松手观察回弹','风力、Verlet 积分与相邻节点距离约束共同更新薄膜。启声时，合成频带也会影响受力。']
+ ['秩序','Order','I','sculpture','genesis','规则点阵、字形采样与空间折叠共用一套粒子。'],
+ ['混沌','Chaos','II','flow','flow','手势注入动量和颜料；从实际速度纹理折射字模，文字随当地流速变化。'],
+ ['涌现','Emergence','III','emergence','emergence','两种组分在格点上反应和扩散。从种子迭代出的纹路，不是循环播放的纹理。'],
+ ['感知','Perception','IV','spaces','perception','不同深度的构件沿一个视轴重合。拖开视角即可揭示遮挡关系；这是一种透视错觉。'],
+ ['创造','Creation','V','sculpture','matter','手势改写几何参数，光棚、清漆与玻璃透射沿新表面变化。塑形值会保留在这次浏览中。'],
+ ['无限','Infinity','VI','spaces','infinity','多尺度的递归场读取先前的种子、塑形与已留下的真实成品画面；跳幕未创作时使用规则初态。']
 ];
-const durations=[13,16,14,18],fact={'webgpu':'gpu' in navigator?'接口存在 / 本作走 WebGL2':'未提供'},loaded=new Map();
+const memory={shape:0,twist:0,feed:0,seeds:0,order:0,impulse:0};
+try{const saved=JSON.parse(sessionStorage.getItem('order-chaos-v2')||'{}');for(const k of Object.keys(memory))if(Number.isFinite(saved?.[k]))memory[k]=saved[k]}catch{}
+function keep(){try{sessionStorage.setItem('order-chaos-v2',JSON.stringify(memory))}catch{}}
+addEventListener('pagehide',keep);
+const dialog=$('#indexSheet'),index=$('#contents'),leaves=[...document.querySelectorAll('.leaf')];
+acts.forEach((a,i)=>{const b=document.createElement('button');b.dataset.act=i;b.innerHTML='<i>'+a[2]+'</i><span>'+a[0]+'</span><em>'+a[1]+'</em>';index.append(b);all.push(b)});
+const durations=[10,12,13,11,14,15],fact={'webgpu':'gpu' in navigator?'接口存在 / 本作走 WebGL2':'未提供'},loaded=new Map();
 let api=null,scene=null,act=0,mode='free',reduced=media.matches,manualMotion=false,timer=0,time=0,age=0,frameNo=0,ready=false,quality=Number.isInteger(Number(query.get('quality')))&&query.has('quality')?Math.min(2,Math.max(0,+query.get('quality'))):null,tier=quality??(innerWidth<700?1:2),fallback=false,force2=query.get('renderer')==='2d',forceReason='',fps=0,measure=0,nframes=0,slow=0,fast=0,lastDraw=0,alive=true,raf=0,w=0,h=0,rev=0,pending=null,warp=null,backend='',lastRead=0,sceneChanges=0,noticeId,ended=false,loadingAct=null,unfocused=false,cpuMs=0,lastQualityAt=-30;
 let input={x:.55,y:.53,dx:0,dy:0,down:false,pressure:0,zoom:0},mark={x:.55,y:.53,energy:.13,hue:.13,tint:null},bands=[0,0,0],ptr=new Map(),pinch=0,wheelZoom=0;
 function toast(text){$('#notice').textContent=text;clearTimeout(noticeId);noticeId=setTimeout(()=>$('#notice').textContent='',3200)}
-function loader(i){if(force2||!api)return Promise.resolve();let name=['sculpture','flow','sculpture','force'][i];if(!loaded.has(name))loaded.set(name,new Promise((ok,no)=>{const s=document.createElement('script');s.src=name+'.js';s.onload=ok;s.onerror=()=>{loaded.delete(name);no(Error('场景资源没有加载：'+name))};document.head.append(s)}));return loaded.get(name)}
+function loader(i){if(force2||!api)return Promise.resolve();let name=acts[i][3];if(!loaded.has(name))loaded.set(name,new Promise((ok,no)=>{const s=document.createElement('script');s.src=name+'.js';s.onload=ok;s.onerror=()=>{loaded.delete(name);no(Error('场景资源没有加载：'+name))};document.head.append(s)}));return loaded.get(name)}
 function resize(){const small=innerWidth<720;const dpr=(fallback?Math.min(1.35,devicePixelRatio):Math.min(small?1.6:1.45,devicePixelRatio))*[.64,.84,1][tier];const limit=[900,1350,2000][tier];const scale=Math.min(dpr,limit/Math.max(innerWidth,innerHeight));const W=Math.max(2,Math.round(innerWidth*scale)),H=Math.max(2,Math.round(innerHeight*scale));if(W!==w||H!==h){w=W;h=H;stage.width=simple.width=w;stage.height=simple.height=h;if(warp){warp=null;api?.discard()}api?.reset()}}
-function updateUI(){const a=acts[act];document.body.dataset.act=act;$('#cn').textContent=a[0];$('#en').textContent=a[1];$('#seq').textContent='ACT '+a[2];$('#poem').textContent=a[3];$('#hint').textContent=fallback&&act===2?'拖动，旋转带面的观察方向':a[4];all.forEach((b,i)=>b.setAttribute('aria-current',String(act===i)));$('#tour').setAttribute('aria-pressed',String(mode==='tour'));$('#tour').innerHTML=mode==='tour'?'<span aria-hidden="true">Ⅱ</span> 自由探索':'<span aria-hidden="true">▷</span> 自动导览';$('#motion').setAttribute('aria-pressed',String(reduced));$('#grade').textContent='画质：'+(quality===null?'自动':['低','中','高'][quality]);$('#principle').textContent=fallback?'当前使用 Canvas2D 即时近似，非 GPU 原管线；场景和手势仍可使用。'+(forceReason?' '+forceReason:''):a[5];stage.hidden=fallback;simple.hidden=!fallback}
-function changeScene(i,low=false){scene?.dispose();api?.reset();act=i;age=0;fallback=!!(force2||!api||low);let s;try{s=!fallback&&window.BeyondScenes[['genesis','flow','matter','force'][act]](api)}catch(e){console.warn('高级场景不可用',e.message);forceReason=e.message;fallback=true}if(fallback)s=BeyondSimple(simple,act);scene=s;sceneChanges++;scene&&updateUI();resize()}
-function request(i,byTour=false){i=(i+4)%4;if(!byTour){mode='free';ended=false}let token=++rev;loadingAct=i;updateUI();if(i===act&&ready){pending=null;loadingAct=null;return}loader(i).then(()=>{if(token===rev){loadingAct=null;pending={i,low:false}}}).catch(e=>{if(token===rev){loadingAct=null;forceReason=e.message;pending={i,low:true}}})}
-function getStats(){let s=scene?.stats()||{};return {act,name:acts[act][0],mode,fps:+fps.toFixed(1),width:w,height:h,quality:tier,backend:fallback?'Canvas2D':backend,particles:0,...s,transition:warp?Math.min(1,warp.t/warp.d):null,muted:!sound.on,reduced,mark:{...mark},bands:[...bands],time,age,frame:frameNo,ready,sceneChanges,autoQuality:quality===null}}
+function updateUI(){const a=acts[act];document.body.dataset.act=act;leaves.forEach((l,i)=>l.hidden=i!==act);if($('#announce').textContent!==a[0])$('#announce').textContent=a[0];all.forEach((b,i)=>b.setAttribute('aria-current',String(act===i)));$('#tour').setAttribute('aria-pressed',String(mode==='tour'));$('#tour').textContent=mode==='tour'?'结束导览':'自动导览';$('#motion').setAttribute('aria-pressed',String(reduced));$('#grade').textContent='画质：'+(quality===null?'自动':['低','中','高'][quality]);$('#principle').textContent=fallback?'Canvas2D 低耗的可操作近似，不是 GPU 原管线。':a[5];stage.hidden=fallback;simple.hidden=!fallback}
+function labels(){if(act===2){const v=Number(memory.feed)||0;$('#fieldreading').textContent='F / '+v.toFixed(4)+'　·　接种 '+Math.round(memory.seeds||0)}if(act===4)$('#workreading').textContent='塑形 '+Number(memory.shape||0).toFixed(2)+'　扭角 '+Number(memory.twist||0).toFixed(2);if(act===5)$('#echoed').textContent=api?.artwork?'上一幕的实帧，正在尺度之间回返':'拖动，偏转尺度的轨迹'}
+function changeScene(i,low=false){scene?.dispose();api?.reset();act=i;age=0;fallback=!!(force2||!api||low);let s;try{s=!fallback&&window.BeyondScenes[acts[act][4]](api)}catch(e){console.warn('高级场景不可用',e.message);forceReason=e.message;fallback=true}if(fallback)s=BeyondLow(simple,act);scene=s;sceneChanges++;scene&&updateUI();resize()}
+function request(i,byTour=false){i=(i+acts.length)%acts.length;if(!byTour){mode='free';ended=false}let token=++rev;loadingAct=i;updateUI();if(i===act&&ready){pending=null;loadingAct=null;return}loader(i).then(()=>{if(token===rev){loadingAct=null;pending={i,low:false}}}).catch(e=>{if(token===rev){loadingAct=null;forceReason=e.message;pending={i,low:true}}})}
+function getStats(){let s=scene?.stats()||{};return {act,name:acts[act][0],mode,fps:+fps.toFixed(1),width:w,height:h,quality:tier,backend:fallback?'Canvas2D':backend,particles:0,...s,transition:warp?Math.min(1,warp.t/warp.d):null,muted:!sound.on,reduced,memory:{...memory},hasArtwork:!!api?.artwork,mark:{...mark},bands:[...bands],time,age,frame:frameNo,ready,sceneChanges,autoQuality:quality===null}}
 function readout(){if($('#meter').hidden)return;const s=getStats();const rows=[['后端',s.backend],['WebGPU',fact.webgpu],['实际绘制帧率',s.fps?s.fps+' fps':'采样中'],['像素缓冲',w+' × '+h],['模拟粒子',s.particles.toLocaleString()],['当前模块',s.module||'准备'],['规模',s.grid||'—'],['画质',['低','中','高'][tier]+(quality===null?' / 自动':' / 手动')]];$('#readings').replaceChildren(...rows.flatMap(([k,val])=>{const a=document.createElement('span'),b=document.createElement('b');a.textContent=k;b.textContent=val;return[a,b]}))}
 function tick(now){
  if(!alive||document.hidden)return;raf=requestAnimationFrame(tick);if(!ready)return;const mobile=innerWidth<720;
  const ceiling=unfocused?20:reduced&&!input.down?24:(tier===0?30:60);const elapsed=(now-lastDraw)/1000;if(elapsed<1/ceiling-.0014)return;let dt=Math.min(.075,elapsed||1/60);lastDraw=now;time+=dt;age+=dt;frameNo++;mark.energy*=Math.exp(-dt*(input.down?.38:.80));if(input.down)mark.energy=Math.max(mark.energy,.24);if(mode==='tour'&&!input.down&&!reduced){mark.x=.52+.23*Math.sin(age*.42+act);mark.y=.53+.16*Math.cos(age*.55);mark.energy=.34+.22*Math.sin(age*.7);mark.hue=.15+.09*Math.sin(time*.21)}
- input.zoom=wheelZoom;const f={time,age,dt,quality:tier,width:w,height:h,input,mark,bands,auto:mode==='tour',reduced};bands=f.bands=sound.frame(f,act);
- const drawStarted=performance.now();try{if(api&&!fallback){if(act===0||act===2){if(warp){api.reset();api.three?.resetState()}}else api.reset()}if(scene.render(f)===false&&!fallback){forceReason='当前设备无法创建此幕的半浮点模拟目标。';warp=null;changeScene(act,true);scene.render(f)}
- if(pending){const p=pending;pending=null;warp=null;const join=api&&!fallback&&!p.low&&!force2;if(join){api.capture(0);mark.tint=api.tint();const [r,g,b]=mark.tint;mark.hue=Math.max(0,Math.min(1,.17+.5*(r-b)+.25*(g-r)))}
- changeScene(p.i,p.low);if(join&&!fallback&&!reduced){warp={t:0,d:p.i===1?1.45:1.18,id:(p.i===1||p.i===3)?1:0}}else api?.discard();if(sound.on)sound.ping(act,mark.x);scene.render({...f,time,age:0,dt:0,quality:tier,width:w,height:h,mark});
+ input.zoom=wheelZoom;const f={time,age,dt,quality:tier,width:w,height:h,input,mark,memory,bands,auto:mode==='tour',reduced};bands=f.bands=sound.frame(f,act);
+ const drawStarted=performance.now();try{if(api&&!fallback){if(act===0||act===4){if(warp){api.reset();api.three?.resetState()}}else api.reset()}if(scene.render(f)===false&&!fallback){forceReason='当前设备无法创建此幕的半浮点模拟目标。';warp=null;changeScene(act,true);scene.render(f)}
+ if(pending){const p=pending;pending=null;warp=null;const join=api&&!fallback&&!p.low&&!force2;if(join){api.capture(0);if(act===4)api.remember();mark.tint=api.tint();const [r,g,b]=mark.tint;mark.hue=Math.max(0,Math.min(1,.17+.5*(r-b)+.25*(g-r)))}
+ keep();changeScene(p.i,p.low);if(join&&!fallback&&!reduced){warp={t:0,d:p.i===1?1.45:1.18,id:(p.i===1||p.i===3)?1:0}}else api?.discard();if(sound.on)sound.ping(act,mark.x);scene.render({...f,time,age:0,dt:0,quality:tier,width:w,height:h,mark});
  }
  if(warp&&!fallback){api.capture(1);api.composite(warp.id,warp.t/warp.d,mark);warp.t+=dt;if(warp.t>=warp.d){warp=null;api.discard();api.three?.resetState()}}
  }catch(e){console.warn('渲染退至二维',e.message);forceReason='高级管线路径不可用。';warp=null;changeScene(act,true)}
  cpuMs=.92*cpuMs+.08*(performance.now()-drawStarted);input.dx=0;input.dy=0;measure+=elapsed;nframes++;if(measure>=1){fps=nframes/measure;nframes=0;measure=0;if(quality===null&&!warp&&!reduced&&!unfocused&&age>2&&time-lastQualityAt>10){let floor=mobile?28:36;slow=fps<floor?slow+1:0;fast=(tier===0?(fps>28.8&&cpuMs<10):fps>52)?fast+1:0;if(slow>=3&&tier>0){tier--;lastQualityAt=time;slow=fast=0;resize()}else if(fast>=12&&tier<(mobile?1:2)){tier++;lastQualityAt=time;slow=fast=0;resize()}}}
- if(now-lastRead>300){lastRead=now;readout()}if(mode==='tour'&&loadingAct===null&&!pending&&!warp&&age>durations[act]){if(act<3)request(act+1,true);else{ended=true;mode='free';updateUI();toast('余震结束。现在可以自由探索。')}}
+ if(now-lastRead>300){lastRead=now;labels();readout()}if(mode==='tour'&&loadingAct===null&&!pending&&!warp&&age>durations[act]){if(act<acts.length-1)request(act+1,true);else{ended=true;mode='free';updateUI();toast('导览已抵达无限。仍可继续干预，或重返第一幕。')}}
 }
 function pulse(x,y,strength){mark.x=x;mark.y=y;mark.energy=Math.min(1,Math.max(mark.energy,strength));mark.hue=.10+.47*x}
 for(const can of [stage,simple]){
@@ -38,19 +47,22 @@ for(const can of [stage,simple]){
  function distance(){const a=[...ptr.values()];return a.length>1?Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]):0}
  can.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;ptr.set(e.pointerId,[e.clientX,e.clientY]);if(ptr.size===2){let d=distance();wheelZoom=Math.min(1,Math.max(-1,wheelZoom+(d-pinch)/180));pinch=d;return}const [x,y]=norm(e);input.dx+=x-input.x;input.dy+=y-input.y;input.x=x;input.y=y;input.pressure=e.pressure||.7;pulse(x,y,.38+Math.min(.62,Math.hypot(input.dx,input.dy)*7))});
  const up=e=>{ptr.delete(e.pointerId);input.down=ptr.size>0;if(!input.down)input.pressure=0};can.addEventListener('pointerup',up);can.addEventListener('pointercancel',up);can.addEventListener('lostpointercapture',up);
- can.addEventListener('wheel',e=>{if(act===0||act===2){e.preventDefault();wheelZoom=Math.min(1,Math.max(-1,wheelZoom-e.deltaY*.0016))}},{passive:false});
+ can.addEventListener('wheel',e=>{if(act===0||act===4){e.preventDefault();wheelZoom=Math.min(1,Math.max(-1,wheelZoom-e.deltaY*.0016))}},{passive:false});
  can.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();input.down=true;input.pressure=.7;pulse(input.x,input.y,.78);sound.ping(act,input.x)}if(['w','a','s','d'].includes(e.key.toLowerCase())){const dx=({a:-.06,d:.06})[e.key]||0,dy=({w:.06,s:-.06})[e.key]||0;input.x=Math.max(.1,Math.min(.9,input.x+dx));input.y=Math.max(.1,Math.min(.9,input.y+dy));input.dx+=dx;input.dy+=dy;pulse(input.x,input.y,.65)}});can.addEventListener('keyup',e=>{if(e.code==='Space')input.down=false});can.addEventListener('blur',()=>{input.down=false})
 }
-all.forEach((b,i)=>b.onclick=()=>request(i));$('#next').onclick=()=>request(act+1);$('#prev').onclick=()=>request(act-1);
-$('#tour').onclick=()=>{if(mode==='tour'){mode='free';++rev;pending=null;loadingAct=null}else{mode='tour';ended=false;age=0;if(act!==0)request(0,true)}updateUI()};
+function closeIndex(){if(dialog.open)dialog.close()}
+$('#indexKey').onclick=()=>dialog.showModal();$('#closeIndex').onclick=closeIndex;
+dialog.onclick=e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeIndex()}};
+all.forEach((b,i)=>b.onclick=()=>{closeIndex();request(i)});document.querySelectorAll('.turn').forEach(b=>b.onclick=()=>request(act+1));
+$('#tour').onclick=()=>{if(mode==='tour'){mode='free';++rev;pending=null;loadingAct=null}else{mode='tour';ended=false;age=0;if(act!==0)request(0,true)}closeIndex();updateUI()};
 $('#sound').onclick=()=>{const on=sound.set(!sound.on);$('#sound').setAttribute('aria-pressed',String(on));$('#sound span').textContent=on?'声音开':'声音关';if(on)sound.ping(act,input.x)};
-let checkedAdapter=false;
+document.querySelector('#quickTour').onclick=()=>document.querySelector('#tour').click();let checkedAdapter=false;
 function probeAdapter(){if(checkedAdapter||!navigator.gpu?.requestAdapter)return;checkedAdapter=true;fact.webgpu='正在核验适配器';navigator.gpu.requestAdapter().then(adapter=>{fact.webgpu=adapter?'可取得适配器 / 未启用':'没有可用适配器';readout()}).catch(()=>{fact.webgpu='浏览器限制适配器探测';readout()})}
 function observe(on){if(on)probeAdapter();$('#meter').hidden=!on;$('#observe').setAttribute('aria-expanded',String(on));readout();if(!on)$('#observe').focus({preventScroll:true})}
-$('#observe').onclick=()=>observe($('#meter').hidden);$('#close').onclick=()=>observe(false);$('#credits').onclick=()=>$('#colophon').showModal();$('#back').onclick=()=>$('#colophon').close();
+$('#observe').onclick=()=>observe($('#meter').hidden);
 $('#motion').onclick=()=>{manualMotion=true;reduced=!reduced;if(reduced){warp=null;mode='free';api?.discard()}updateUI()};media.addEventListener?.('change',()=>{if(!manualMotion){reduced=media.matches;updateUI()}});
 $('#grade').onclick=()=>{quality=quality===null?0:quality===2?null:quality+1;tier=quality??(innerWidth<720?1:2);resize();updateUI();readout()};
-document.addEventListener('keydown',e=>{if($('#colophon').open)return;if(e.key==='Escape'&&!$('#meter').hidden)observe(false);if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();request(act+(e.key==='ArrowRight'?1:-1))}else if(/^[1-4]$/.test(e.key))request(+e.key-1)});
+document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;if(e.key.toLowerCase()==='m'){if(dialog.open)closeIndex();else dialog.showModal();return}if(dialog.open)return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();request(act+(e.key==='ArrowRight'?1:-1))}else if(/^[1-6]$/.test(e.key))request(+e.key-1)});
 addEventListener('blur',()=>{unfocused=true;input.down=false;ptr.clear()});addEventListener('focus',()=>{unfocused=false});document.addEventListener('visibilitychange',()=>{sound.visibility();cancelAnimationFrame(raf);input.down=false;ptr.clear();if(!document.hidden){lastDraw=performance.now();nframes=measure=0;raf=requestAnimationFrame(tick)}});addEventListener('resize',resize);
 stage.addEventListener('webglcontextlost',e=>{e.preventDefault();force2=true;warp=null;pending=null;forceReason='图形上下文丢失，已切到实时简化版，可刷新重试。';scene=null;api=null;changeScene(act,true);toast(forceReason)});
 window.BeyondApp={snapshot:getStats,select:request};

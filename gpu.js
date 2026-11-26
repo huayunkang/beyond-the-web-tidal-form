@@ -16,5 +16,15 @@ window.BeyondGPU=canvas=>{
   const tex=gl.createTexture(),fb=gl.createFramebuffer(),p=program(vertex,'#version 300 es\nprecision highp float;in vec2 uv;out vec4 color;uniform sampler2D img;void main(){color=texture(img,uv);}');
   try{gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,24,16,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.bindFramebuffer(gl.FRAMEBUFFER,fb);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);gl.viewport(0,0,24,16);gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);gl.disable(gl.SCISSOR_TEST);gl.bindTexture(gl.TEXTURE_2D,plates[0]);gl.useProgram(p);gl.uniform1i(gl.getUniformLocation(p,'img'),0);triangle(p);const a=new Uint8Array(24*16*4);gl.readPixels(0,0,24,16,gl.RGBA,gl.UNSIGNED_BYTE,a);let w=0,c=[0,0,0];for(let i=0;i<a.length;i+=4){const mx=Math.max(a[i],a[i+1],a[i+2]),mi=Math.min(a[i],a[i+1],a[i+2]),v=(mx-mi)*mx/65535;if(mx<28)continue;w+=v;for(let j=0;j<3;j++)c[j]+=a[i+j]*v/255}return w>0?c.map(x=>x/w):[.65,.61,.53]}finally{gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.deleteFramebuffer(fb);gl.deleteTexture(tex);gl.deleteProgram(p);reset()}
  }
- return {gl,program,triangle,reset,capture,composite,discard,tint,dispose(){discard();passages.forEach(p=>gl.deleteProgram(p));gl.deleteVertexArray(vao)}}
+ // Persistent one-frame artwork proof (not a screenshot of DOM); single texture reused.
+ let artwork=null,artAspect=1,artW=0,artH=0;
+ function remember(){if(!plates[0])return;const width=Math.max(1,Math.round(w*Math.min(1,768/Math.max(w,h)))),height=Math.max(1,Math.round(h*Math.min(1,768/Math.max(w,h))));
+  const draw=gl.createFramebuffer(),read=gl.createFramebuffer();if(!artwork)artwork=gl.createTexture();
+  try{gl.bindTexture(gl.TEXTURE_2D,artwork);if(artW!==width||artH!==height){gl.texImage2D(gl.TEXTURE_2D,0,withAlpha?gl.RGBA8:gl.RGB8,width,height,0,withAlpha?gl.RGBA:gl.RGB,gl.UNSIGNED_BYTE,null);artW=width;artH=height}
+  for(const k of [gl.TEXTURE_MAG_FILTER,gl.TEXTURE_MIN_FILTER])gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR);for(const k of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE);
+  gl.bindFramebuffer(gl.READ_FRAMEBUFFER,read);gl.framebufferTexture2D(gl.READ_FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,plates[0],0);
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,draw);gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,artwork,0);
+  gl.blitFramebuffer(0,0,w,h,0,0,width,height,gl.COLOR_BUFFER_BIT,gl.LINEAR);artAspect=w/h;
+  }finally{gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.deleteFramebuffer(draw);gl.deleteFramebuffer(read);reset()}}
+ return {get artwork(){return artwork},get artAspect(){return artAspect},remember,gl,program,triangle,reset,capture,composite,discard,tint,dispose(){discard();if(artwork)gl.deleteTexture(artwork);passages.forEach(p=>gl.deleteProgram(p));gl.deleteVertexArray(vao)}}
 };

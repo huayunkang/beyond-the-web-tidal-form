@@ -314,7 +314,7 @@
     show: `${seat}
     uniform sampler2D uA;
     uniform vec2 uPix;
-    uniform float uFrame;
+    uniform float uFrame; uniform sampler2D uType, uVel; uniform float uAspect;
     float felt(vec3 c){return log(1.0+dot(c,vec3(.94,.84,.83)));}
     float dust(vec2 p){
       vec3 q=fract(vec3(p.xyx)*.1031);
@@ -334,28 +334,30 @@
       float high=pow(max(dot(N,normalize(vec3(-.41,.24,1.0))),0.),24.);
       float edge=smoothstep(.012,.17,length(g));
       float mass=dot(sampleInk,vec3(1));
-      vec3 rgb=(sampleInk.r*vec3(.90,.82,.67)
-                +sampleInk.g*vec3(.27,.62,.55)
-                +sampleInk.b*vec3(.78,.32,.25))/max(mass,.0001);
-      float cover=1.-exp(-mass*1.29);
-      vec2 p=(uv-.5)*uRect;
-      float fibre=.5+.5*sin(61.0*d + p.x*34.0 - p.y*43.0 + .65*sin(p.y*71.));
-      float brushed=.94+.15*(fibre-.5)+.18*nDot;
-      vec3 color=rgb*cover*brushed*(.61+.45*nDot);
-      color+=vec3(1.0,.88,.71)*cover*(high*.085+edge*.06);
-      vec2 pc=opening(uv);
-      float shadow=exp(-2.9*dot(pc,pc));
-      float lens=(1.-smoothstep(.23,.75,length(p)))*.004;
-      float grain=dust(gl_FragCoord.xy+vec2(17.0,7.0)*mod(uFrame,7.0))-.5;
-      color+=vec3(.010,.011,.012)+vec3(.016,.014,.012)*shadow + lens;
-      color+=grain*(.012+.026*cover);
-      // Black edge falloff keeps the instrument-like art direction readable off-center.
-      float frame=1.-.27*smoothstep(.5,1.0,max(abs(uv.x-.5)*2.,abs(uv.y-.5)*2.));
-      outColor=vec4(max(color*frame,0.),1.);
+      vec3 rgb=(sampleInk.r*vec3(.98,.095,.035)
+                +sampleInk.g*vec3(.035,.39,.98)
+                +sampleInk.b*vec3(1.0,.60,.09))/max(mass,.0001);
+      float cover=1.-exp(-mass*1.82);
+      vec2 vel=texture(uVel,uv).xy;
+      // Letterpress on the bottom glass: actual solved velocity bends its image.
+      vec2 letter=uv-vec2(.5,.53);
+      letter*=vec2(1.08,1.08*2.7/uAspect);
+      letter+=vec2(.5)+clamp(vel*vec2(.00165,.0034),vec2(-.12),vec2(.12))+g*.068;
+      float glyph=0.;
+      if(all(greaterThanEqual(letter,vec2(0)))&&all(lessThanEqual(letter,vec2(1)))) glyph=texture(uType,letter).r;
+      float ridges=.5+.5*sin(d*62.+dot(uv,vec2(26.,38.)));
+      float glint=pow(max(dot(N,normalize(vec3(-.46,.36,.99))),0.),36.);
+      float grain=dust(gl_FragCoord.xy)-.5;
+      vec3 paper=mix(vec3(.105,.032,.054),vec3(.17,.054,.06),uv.x*.6+uv.y*.4);
+      paper=mix(paper,vec3(.99,.80,.67),glyph*.87);
+      vec3 enamel=rgb*(.72+.47*nDot)+vec3(.44,.67,.86)*glint*.53+edge*(.11+.25*ridges);
+      vec3 color=mix(paper,enamel,cover*.94)+grain*.018;
+      color+=cover*glyph*(.1+.31*edge)*vec3(1.,.92,.70);
+      outColor=vec4(max(color,0.),1.);
     }`
   };
 
-  const levels = [[64,224,10],[96,352,14],[144,496,20]];
+  const levels = [[80,320,12],[128,512,17],[176,736,22]];
   const limit = (n, a, b) => Math.min(b, Math.max(a, n));
   const value = (n, fallback) => Number.isFinite(n) ? n : fallback;
 
@@ -366,6 +368,15 @@
     const linear=!!gl.getExtension('OES_texture_float_linear');
     const texLimit = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), 1792);
     const shaders = {};
+    // Generate a local font plate. No font file or image is downloaded.
+    const card=document.createElement('canvas');card.width=1440;card.height=512;
+    const pen=card.getContext('2d');pen.fillStyle='#000';pen.fillRect(0,0,1440,512);
+    pen.fillStyle='#fff';pen.textAlign='center';pen.textBaseline='middle';
+    pen.font='bold 404px Georgia,serif';pen.save();pen.translate(720,244);pen.scale(1300/pen.measureText('CHAOS').width,1);pen.fillText('CHAOS',0,0);pen.restore();
+    const letters={tex:gl.createTexture()};gl.bindTexture(gl.TEXTURE_2D,letters.tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,card);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+    for(const k of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR);
+    for(const k of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE);
     let fields = null, failed = false, frames = 0, steps = 0, jacobi = 0, lastPasses = 0, modelClock = 0;
     let mark = [.5,.5,0], hue=.18, serial=0, lastX=.5,lastY=.5, generated = false;
     const caps = [gl.BLEND,gl.DEPTH_TEST,gl.CULL_FACE,gl.SCISSOR_TEST,gl.STENCIL_TEST];
@@ -542,7 +553,7 @@
         const vel=[stroke.v[0]*stroke.power*.64/n,stroke.v[1]*stroke.power*.64/n,0];
         for(let i=1;i<=n;i++) splat(s,[px+(x-px)*i/n,py+(y-py)*i/n],vel,pigment,.0011+.0009*stroke.power);
         injections = n;
-        serial++;
+        serial++; if(f.memory && f.input?.down) f.memory.impulse=Math.min(1,(f.memory.impulse||0)+.003+Math.hypot(...stroke.v)*.0001);
       } else if(!f.reduced && steps%4===0 && modelClock>.45) {
         const clock=modelClock;
         const upright=s.ratio<1;
@@ -608,7 +619,7 @@
         const divider=q===0&&!f.input?.down&&!f.auto&&!f.reduced?2:1;
         if((!f.reduced || f.input?.down) && dt && frames%divider===0) step(f,Math.min(1/21,dt*divider),params);
         const output=use('show');
-        tex(output,'uA',fields.dye.read,0);
+        tex(output,'uA',fields.dye.read,0);tex(output,'uVel',fields.vel.read,1);tex(output,'uType',letters,2);one(output,'uAspect',fields.ratio);
         xy(output,'uRect',fields.rect);
         xy(output,'uPix',[1.35/fields.dw,1.35/fields.dh]);
         one(output,'uFrame',f.reduced?0:Math.floor(value(f.time,0)*12));
@@ -631,13 +642,13 @@
     }
 
     function dispose(){
-      free(fields);fields=null;failed=true;
+      free(fields);fields=null;failed=true;gl.deleteTexture(letters.tex);
       Object.values(shaders).forEach(item=>gl.deleteProgram(item.p));
     }
     function stats(){
       return {
         particles:0,
-        module:failed ? 'Flow: half-float unavailable' : 'Pavel Dobryakov MIT · WebGL2 FP16 · curl / Jacobi',
+        module:failed ? 'Flow: half-float unavailable' : 'Pavel FP16 · 压力投影 / 速度场折字',
         grid:fields ? `V ${fields.vw}×${fields.vh} · D ${fields.dw}×${fields.dh}` : '—',
         jacobiIterations:jacobi,
         passes:lastPasses,
