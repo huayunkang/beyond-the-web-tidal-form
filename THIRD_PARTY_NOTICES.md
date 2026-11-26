@@ -1,0 +1,17 @@
+# 《超越界面》 / BEYOND THE WEB — 第三方技术与版权
+本作采用原实现，不把成熟引擎、示例着色器或物理方程声明为项目原创。作品运行时没有第三方 CDN；参赛展示页提供本文件与许可证原文。下列七组为实际发布的核心模块。
+
+| 模块 | 版本与源码 | 实际保留、改造与资产边界 |
+|---|---|---|
+| 1 · 粒子属性与点精灵 | [Three.js r180 原例](https://github.com/mrdoob/three.js/blob/0af9729d0c143a86a1d725d6e2c3ad83301f3f34/examples/webgl_buffergeometry_custom_attributes_particles.html)，three.js authors，MIT | 保留 Points/BufferGeometry、size/color 自定义属性、相机空间粒径、gl_PointCoord 贴图取色、加色混合。将原例立方体中的点重排为原创扭结经纬，加入指针势场和断续丝线，原创径向纹理取代 spark1.png。不是照搬随机立方体。 |
+| 2 · 物理清漆与片状法线 | [物理清漆原例](https://github.com/mrdoob/three.js/blob/0af9729d0c143a86a1d725d6e2c3ad83301f3f34/examples/webgl_materials_physical_clearcoat.html)、[FlakesTexture](https://github.com/mrdoob/three.js/blob/0af9729d0c143a86a1d725d6e2c3ad83301f3f34/examples/jsm/textures/FlakesTexture.js)，同一 r180，MIT | 直接使用 MeshPhysicalMaterial 与原 FlakesTexture 生成器、原例中清漆/金属度及法线重复的搭配。调整粗糙度、铸段几何、着色和高光尺度；没有带入碳布、划痕、HDR 或高尔夫贴图。 |
+| 3 · 透射材质及透射通道 | [物理透射原例](https://github.com/mrdoob/three.js/blob/0af9729d0c143a86a1d725d6e2c3ad83301f3f34/examples/webgl_materials_physical_transmission.html)，同一 r180，MIT | 保留引擎的实际 transmission 采样、IOR、specular 和折射渲染目标，加入厚度、色散与按画质变化的采样分辨率。玻璃窗与内部铜芯为自制几何，不是原球、模型或 HDR。使用同一 Scene/Camera 以复用引擎缓存。 |
+| 4 · 程序影棚 / PMREM | [RoomEnvironment](https://github.com/mrdoob/three.js/blob/0af9729d0c143a86a1d725d6e2c3ad83301f3f34/examples/jsm/environments/RoomEnvironment.js) 与 Three.js PMREMGenerator，同一 r180，MIT | 直接实例化原有房间、灯面与预滤波路径，而非用手写反光替代。加入黑旗和两条软箱轮廓，快速释放离屏环境。RoomEnvironment 上游注明基于 [model-viewer EnvironmentScene](https://github.com/google/model-viewer/blob/master/packages/model-viewer/src/three-components/EnvironmentScene.ts)，Copyright 2021 Google LLC，Apache-2.0；附该上游许可，未引入 model-viewer 运行时。 |
+| 5 · 流体压力投影 | [PavelDoGreat/WebGL-Fluid-Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation/tree/a2d292931f19d9b3b9f564e23e6c32729d2121c3)，Pavel Dobryakov，MIT (2017) | 藏入 9 段原版 GLSL 核心；保留 curl、vorticity、divergence、压力衰减/Jacobi、gradient subtract、速度与染料 advection 与 splat。GLSL300/手动过滤接口、宿主生命周期、开场墨种和显示材质调整。未发布原例的分析脚本、商店链接和 GUI。 |
+| 6 · Verlet 粒子/约束布 | [Three.js r122 原版 cloth](https://github.com/mrdoob/three.js/blob/95ef309c79158aa506f3f7ddeab769e7c4908187/examples/webgl_animation_cloth.html)，three.js authors / 原例 Cloth Simulation by @zz85，MIT | 直接保留 Particle/addForce/integrate、satisfyConstraints、沿面法线的风压。将悬挂方布改为闭环、增加局部抓点、恢复力和原创铜青表面。原 dat.GUI、示例草地与布纹均不在发行物。 |
+| 7 · 帧缓冲转场 | [gl-transitions](https://github.com/gl-transitions/gl-transitions/tree/22326e3d2099a0ccdbeeebd091d151182c2e7669)，[CrossWarp · Eke Péter](https://github.com/gl-transitions/gl-transitions/blob/22326e3d2099a0ccdbeeebd091d151182c2e7669/transitions/CrossWarp.glsl)、[DirectionalWarp · pschroen](https://github.com/gl-transitions/gl-transitions/blob/22326e3d2099a0ccdbeeebd091d151182c2e7669/transitions/DirectionalWarp.glsl)，单文件头及项目 MIT | 两个原版函数和作者行原样嵌入；加入 WebGL2 宿主，输入不是作者插图而是上幕 GPU 真帧和正在计算的新帧；方向随留痕而变。 |
+
+**随网页分发的原文**（离线包解压后可见）：[Three.js r180](licenses/three-MIT.txt)、[Three.js r122](licenses/three-r122-MIT.txt)、[Pavel](licenses/PavelDoGreat-WebGL-Fluid-Simulation.MIT.txt)、[GL Transitions](licenses/gl-transitions-MIT.txt)、[model-viewer 上游](licenses/model-viewer-upstream-LICENSE.txt)。项目根目录读此文件时，这些链接对应 **src/licenses/**。各项目版权仍归原持有人。
+
+**项目新增**：潮相标本的几何、展演顺序、状态传递、取色、程序音响、操作界面、画质调度和诚实的 Canvas2D 备选。引用框架许可不等于许可使用所有样例媒体；本作发布包中没有来自原例的外部照片、模型、外部字体或音乐。UI 使用设备本地字体。旧参赛作品与本作无媒体复用。
+**制作工具**：esbuild 0.25.12（Evan Wallace / MIT）仅打包 Three 的代码，构建器不进入网页；Playwright、Chrome、FFmpeg 用于实测与录制，不作为作品浏览器依赖。商业参考站与实验原版的截图录像仅存在本地研究目录，不作为本作演示片镜头。
