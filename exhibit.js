@@ -44,7 +44,9 @@ for(const can of [stage,simple]){
 all.forEach((b,i)=>b.onclick=()=>request(i));$('#next').onclick=()=>request(act+1);$('#prev').onclick=()=>request(act-1);
 $('#tour').onclick=()=>{if(mode==='tour'){mode='free';++rev;pending=null;loadingAct=null}else{mode='tour';ended=false;age=0;if(act!==0)request(0,true)}updateUI()};
 $('#sound').onclick=()=>{const on=sound.set(!sound.on);$('#sound').setAttribute('aria-pressed',String(on));$('#sound span').textContent=on?'声音开':'声音关';if(on)sound.ping(act,input.x)};
-function observe(on){$('#meter').hidden=!on;$('#observe').setAttribute('aria-expanded',String(on));readout();if(!on)$('#observe').focus({preventScroll:true})}
+let checkedAdapter=false;
+function probeAdapter(){if(checkedAdapter||!navigator.gpu?.requestAdapter)return;checkedAdapter=true;fact.webgpu='正在核验适配器';navigator.gpu.requestAdapter().then(adapter=>{fact.webgpu=adapter?'可取得适配器 / 未启用':'没有可用适配器';readout()}).catch(()=>{fact.webgpu='浏览器限制适配器探测';readout()})}
+function observe(on){if(on)probeAdapter();$('#meter').hidden=!on;$('#observe').setAttribute('aria-expanded',String(on));readout();if(!on)$('#observe').focus({preventScroll:true})}
 $('#observe').onclick=()=>observe($('#meter').hidden);$('#close').onclick=()=>observe(false);$('#credits').onclick=()=>$('#colophon').showModal();$('#back').onclick=()=>$('#colophon').close();
 $('#motion').onclick=()=>{manualMotion=true;reduced=!reduced;if(reduced){warp=null;mode='free';api?.discard()}updateUI()};media.addEventListener?.('change',()=>{if(!manualMotion){reduced=media.matches;updateUI()}});
 $('#grade').onclick=()=>{quality=quality===null?0:quality===2?null:quality+1;tier=quality??(innerWidth<720?1:2);resize();updateUI();readout()};
