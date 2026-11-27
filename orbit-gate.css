@@ -1,0 +1,26 @@
+/* A stationary hit target encloses the moving engraving. It stays on the same viewport coordinates after reparenting. */
+:root{--gate-edge:max(14px,1.5vw,env(safe-area-inset-right));--gate-w:68px;--gate-h:72px}
+body #indexHome{position:fixed;right:var(--gate-edge);top:50%;width:var(--gate-w);height:var(--gate-h);inset-inline-start:auto;bottom:auto;transform:translateY(-50%);z-index:7;pointer-events:none}
+body #indexKey.orbitControl,body #indexSheet>#indexKey.orbitControl{position:fixed;inset:auto var(--gate-edge) auto auto;top:50%;width:var(--gate-w);min-width:var(--gate-w);height:var(--gate-h);min-height:var(--gate-h);margin:0;padding:0;transform:translateY(-50%);border:0;border-radius:50%;display:grid;place-items:center;background:none;box-shadow:none;isolation:isolate;outline-offset:2px;pointer-events:auto;color:#f4ead4;z-index:30;touch-action:manipulation}
+body #indexHome #indexKey.orbitControl{position:absolute;inset:0;transform:none}
+body #indexKey.orbitControl::after,body #indexKey.orbitControl::before{display:none}
+.orbitFace{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;width:100%;height:100%;line-height:1}
+.orbitFace::before{content:'';position:absolute;inset:6px 5px 2px;z-index:-1;border-radius:50%;background:radial-gradient(ellipse,#181c1bd9 0%,#232320b8 40%,#20232473 57%,transparent 74%);pointer-events:none}
+.orbitWheel{display:block;width:56px;height:40px;flex:none;overflow:visible;filter:drop-shadow(0 1px 1px #17100e85)}
+.orbitDial{transform-origin:30px 23px;transform:rotate(var(--gate-angle,0deg))}
+.orbitWheel ellipse,.orbitWheel path{fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round}.orbitWheel .innerArc{stroke-width:.85;stroke-opacity:.78}.orbitWheel .orbitBody{fill:#ff975c;stroke:#332b25;stroke-width:.6}.orbitWheel .sightMark{stroke-width:.8}.orbitWheel .sightCore{fill:currentColor}
+body #indexKey.orbitControl .gateText{margin:-1px 0 0;white-space:nowrap;writing-mode:horizontal-tb;font:530 13px/1.25 var(--sans,system-ui);letter-spacing:.15em;padding-left:.15em;color:inherit;text-shadow:0 1px 3px #151310;font-variant:normal}
+body #indexKey.orbitControl:focus-visible,body #indexSheet>#indexKey.orbitControl:focus-visible{outline:2px solid #fa8c4c}
+body #indexSheet::backdrop{background:transparent}
+.orbitDefs{position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none}
+body.orbitIndexActive main>canvas,body.orbitIndexActive main>.leaf:not([hidden]){scale:var(--gate-scene-scale,1);transform-origin:42% 50%}
+body.orbitIndexActive main>canvas{filter:saturate(var(--gate-scene-sat,1))}
+body #indexSheet .spaceShell[data-gate-transit="travel"]{scale:var(--gate-cover-scale,1);transform-origin:95% 50%}
+@media(max-width:650px){:root{--gate-w:54px;--gate-h:60px;--gate-edge:max(5px,env(safe-area-inset-right))}.orbitWheel{width:47px;height:34px}body #indexKey.orbitControl .gateText{font-size:12px}.orbitFace::before{inset:3px -1px 0}}
+@media(prefers-reduced-motion:reduce){body.orbitIndexActive main>canvas,body.orbitIndexActive main>.leaf:not([hidden]),body #indexSheet .spaceShell[data-gate-transit="travel"]{scale:none;filter:none}}
+body[data-still=true].orbitIndexActive main>canvas,body[data-still=true].orbitIndexActive main>.leaf:not([hidden]){scale:none;filter:none}
+/* The engraving changes ink on pale scenes, never its position or hit area. */
+body:is([data-act="0"],[data-act="3"],[data-act="4"]):not(.orbitIndexActive) #indexKey.orbitControl{color:#2d3029}
+body:is([data-act="0"],[data-act="3"],[data-act="4"]):not(.orbitIndexActive) .orbitFace::before{background:radial-gradient(ellipse,#f1e9d7d9 0%,#f5ecd6ba 42%,transparent 74%)}
+body:is([data-act="0"],[data-act="3"],[data-act="4"]):not(.orbitIndexActive) #indexKey.orbitControl .gateText{text-shadow:0 1px 2px #fffae7}
+body:is([data-act="0"],[data-act="3"],[data-act="4"]):not(.orbitIndexActive) .orbitWheel{filter:drop-shadow(0 1px 1px #fff8e9a6)}

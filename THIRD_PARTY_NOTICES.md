@@ -17,8 +17,17 @@ V1 的 r122 Verlet 布带已退出本版正式六幕；旧版原实现及其 MIT
 - [Codrops RepetitiveTypography · 固定版](https://github.com/codrops/RepetitiveTypography/tree/9bd910cadc638ac3a855690600eecf485504b6e1)，[MIT 许可原文](licenses/Codrops-RepetitiveTypography-MIT.txt)。type-motion.js 保留原版奇偶字符出入、中心成对延迟、行错拍与 expo 节奏；60行压成4个尺度，改由场景已有时钟调度。没有打包 GSAP、原版字体、摄影或示例整页。
 - 采用 [Adobe Source Han Serif](https://github.com/adobe-fonts/source-han-serif) 和 [Source Han Sans](https://github.com/adobe-fonts/source-han-sans) 简体字面、[Cormorant](https://github.com/CatharsisFonts/Cormorant) Medium 和 Medium Italic、[IBM Plex](https://github.com/IBM/plex) Mono Regular：均为 SIL Open Font License 1.1。保留版权、来源与许可；子集改为非保留名。固定提交、原文件位置和字节指纹见[字体来源清单](fonts/sources.json)。许可分别为[思源宋体](fonts/song-OFL.txt)、[思源黑体](fonts/sans-OFL.txt)、[Cormorant 两款](fonts/roman-OFL.txt)、[IBM Plex Mono](fonts/mono-OFL.txt)。字体不是本项目设计的；所有字体与网页同源。朱雀仿宋与 Space Grotesk 只在本地原型做实际比较，不随作品分发。
 - Grid System、AnimatedGridLayout、SuperfluidLayout、TypographyMotion、ScrollBlurTypography、type-o 的完整工具或网站不进入发布包。具体研究与演示方式在本地 research 记录，造型、剧本与未列明的图像字体不能由某个储存库的代码许可自动授权。
-## FIELD INDEX 展谱
+## 历史纸质 FIELD INDEX（下述旧菜单动效现已退出运行版）
 - [SuperfluidLayout / Codrops · 92dcc85](https://github.com/codrops/SuperfluidLayout/tree/92dcc855e21bc8b843a55f37ef82e1b6e9dc227e)：将 textReveal.js 的裁行、150%/15° 揭字、−150%/−5° 收字与 30ms 逐行错拍适配为 field-index.css；缩短时长，无需 GSAP。[MIT 许可原文](licenses/SuperfluidLayout.MIT.txt)。
 - [InlineMenuLayout / Codrops · ccfb1d1](https://github.com/codrops/InlineMenuLayout/tree/ccfb1d128002efe53c83703aaa5fbb438036259f)：将 menuController.js 以选中位置为起点、每一行相距 10ms 的退场错拍改写为行距离和 CSS 延迟；不引入其图库、页面或字体。[MIT 许可原文](licenses/InlineMenuLayout.MIT.txt)。
 - [FullscreenOverlayStyles](https://github.com/codrops/FullscreenOverlayStyles/tree/c8ec821c031a2de83a66909077b2c34b7f76f80a) 与 [MultiboxMenu](https://github.com/codrops/MultiboxMenu/tree/e4c5f887f2df0f7cf6c8534891a451e9258f7a71) 仅用于观察遮幅、退场和层次，未复制代码或素材，两者不是整仓 MIT。
 - 六幅 WebP 为本作六个既有实时场景的画布截帧（底层第三方技术见前表），不是第三方演示截图。目录编排、中文导览、图版构图、入口复位及触屏预览逻辑为本次 AI 辅助设计与实现；不加载外站图像、字体或统计服务。
+
+## 现行 FIELD ORBIT 空间展谱
+- [Codrops / 3DCarousel @ b18acdc](https://github.com/codrops/3DCarousel/tree/b18acdc8900f46302bf1601ace47eee87f418e1c) · [MIT 原声明](licenses/Codrops-3DCarousel-MIT.txt)：环面 rotateY/translateZ 的排列、反倾、速度推开与 120/14 弹簧；改为六件本作实景图版、离散聚焦和一条动态取景。
+- [Codrops / MagneticButtons @ b2ee8ac](https://github.com/codrops/MagneticButtons/tree/b2ee8ac9cd561e13198335cca5684fe1c31d543c) · [MIT 原声明](licenses/Codrops-MagneticButtons-MIT.txt)：保留 0.7 宽触发区、0.3 位移比例、0.1 插值和反向文字牵引，改为原创双椭圆轨仪。
+- [Codrops / ExpandingRoundedMenu @ 9f8174a](https://github.com/codrops/ExpandingRoundedMenu/tree/9f8174aaca176a0e4b31e1330f9049b45fd02758) · [MIT 原声明](licenses/Codrops-ExpandingRoundedMenu-MIT.txt)：采用同一时间轴逆向开合、盖层 1.1→1.0 的压缩与分段缓动，不采用其整站圆角菜单。
+- [Codrops / Theodore @ e7bfd13](https://github.com/codrops/Theodore/tree/e7bfd13c67e63aac864f812d0fa0f56a3eb7ee18) · [MIT 原声明](licenses/Codrops-Theodore-MIT.txt)：旋转原版 V/Q 二次曲线的遮幅方向，从轨仪向展场揭开；用单一进度支持中途反向。
+- [Codrops / ImageTilesMenu @ ed861a8](https://github.com/codrops/ImageTilesMenu/tree/ed861a855e5efa6ba68eb3153b2692ce8a6ec9e8) · [MIT 原声明](licenses/Codrops-ImageTilesMenu-MIT.txt)：保留原 2×2 象限、200% 背景定位、图块重挂接和 750ms/20ms FLIP 时序；原生浏览器动画替代需另行授权的 GSAP/Flip，接本作真实场景加载。
+- [3DLettersMenuHover / 60871b7](https://github.com/codrops/3DLettersMenuHover/tree/60871b7427885160b3ffe395a9f1db010f272a03) 原版 MIT，只运行研究，未分发其字体/图片、SplitText 或交互动效代码。上述各仓的 MIT 不替代其中单独依赖和媒体的授权。本次新增展谱不分发 GSAP、Flip、商业字体、上游摄影或示例整站。
+- 六幅静帧与六段无声实景采样取自本作六幕，由本地浏览器取景。新现场的轨仪形、中文文案、六种观察动作、图像剪裁、焦点轨迹和实际场景接力为本次 AI 辅助编排，不将上游空间/动效算法称作全自研。

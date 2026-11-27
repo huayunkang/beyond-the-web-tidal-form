@@ -1,0 +1,22 @@
+/* A ring of cut optical plates. Perspective / preserve-3d / orbital transforms
+   adapted from Codrops 3DCarousel (MIT), see licenses/Codrops-3DCarousel-MIT.txt. */
+.orb-viewport{position:absolute;inset:0;overflow:hidden;isolation:isolate;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;perspective:var(--orbit-p,900px);perspective-origin:var(--ox,56%) var(--oy,42.5%);--ox:56%;--oy:42.5%;--aw:44vw;--ah:30vw;--orbit-r:500px}
+.orb-viewport.orb-grabbing{cursor:grabbing}
+.orb-datum{position:absolute;left:var(--ox);top:calc(var(--oy) + var(--ah)*.26);width:109%;height:calc(var(--ah)*.88);transform:translate(-50%,-50%) rotate(-5deg);pointer-events:none;color:#c6bfa94d}
+.orb-datum svg{width:100%;height:100%;overflow:visible;stroke-width:.85}.orb-datum .orb-subline{opacity:.58}
+.orb-world,.orb-cell{position:absolute;transform-style:preserve-3d;width:0;height:0}
+.orb-world{left:var(--ox);top:var(--oy);transform:translateZ(calc(0px - var(--orbit-r)))}.orb-cell{left:0;top:0}
+.orb-art{position:absolute;left:calc(var(--aw)*-.5);top:calc(var(--ah)*-.5);width:var(--aw);height:var(--ah);backface-visibility:hidden;transform:rotateY(var(--spin-lean,0deg));--cut:polygon(8% 0,100% 0,100% 86%,92% 100%,0 100%,0 14%);--edge:#d3b473}
+.orb-film{position:absolute;inset:0;overflow:hidden;clip-path:var(--cut);background:var(--edge);filter:brightness(var(--strength,1));pointer-events:auto}
+.orb-film img,.orb-film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;max-width:none;pointer-events:none}
+.orb-film video{opacity:0;transition:opacity .24s linear}.orb-film video.orb-playing{opacity:1}
+.orb-art[data-act="0"]{--cut:polygon(8% 0,100% 0,100% 76%,84% 100%,0 100%,0 22%);}
+.orb-art[data-act="1"]{--cut:ellipse(51% 48% at 50% 50%);--edge:#c57965}
+.orb-art[data-act="2"]{--cut:polygon(12% 0,86% 0,100% 18%,100% 79%,88% 100%,12% 100%,0 81%,0 18%);--edge:#ac6f75}
+.orb-art[data-act="3"]{--cut:polygon(21% 0,100% 0,81% 100%,0 100%);--edge:#9fbca9}
+.orb-art[data-act="4"]{--cut:ellipse(50% 51% at 50% 51%);--edge:#c6b8a2}
+.orb-art[data-act="5"]{--cut:polygon(13% 0,87% 0,100% 49%,88% 100%,12% 100%,0 50%);--edge:#9ab1ba}
+.orb-slug{position:absolute;left:12%;bottom:-17px;color:#c9c5b6;font:400 9px/1 var(--mono,monospace);letter-spacing:.17em;white-space:pre;pointer-events:none;opacity:.71}
+.orb-art[data-focus="false"] .orb-slug{opacity:.55}
+@media(max-width:730px) and (orientation:portrait){.orb-slug{font-size:8px}.orb-datum{width:115%}}
+@media(prefers-reduced-motion:reduce){.orb-film video{transition:none}}

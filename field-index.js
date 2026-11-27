@@ -1,26 +1,39 @@
-/* Field Index: staging the catalogue does not instantiate another simulation. */
+/* A preview never calls the scene loader. The real world changes only under the tile cover. */
 window.FieldIndex=({acts,dialog,buttons,current,enter,reduced})=>{
- const $=s=>document.querySelector(s),key=$('#indexKey'),home=$('#indexHome'),nav=$('#contents'),plate=$('.proof'),layers=$('.proofLayers');
- const entries=[
- ['折一道平面，看字阵重新排列。','纸上的字与曲面出自同一组坐标。','成形之前','Origin'],
- ['划过墨层，给文字一股动量。','油墨与铅字之间，流速改变了阅读。'],
- ['点下种子，让纹路自己生长。','没有逐条绘制的线，在同一片组织中相遇。','观察之间','Encounter'],
- ['偏离正视，拆开完整的眼。','同一组构件，换个角度便不再是同一幅画。'],
- ['扭转铸体，留下自己的形。','透过玻璃再看字，观看已经成为塑造。','留下之后','Trace'],
- ['沿着回声，找回上幕铸件。','把留下的形送往更远的尺度。']
- ];
- let choice=-1,phase='closed',sequence=0,ticket=0,exitTimer=0,keyAnim=null,activeLayer=null,origin,openingAct=0;
- const cache=new Map(),page=$('.atlasPage'),go=$('#enterAct');
- for(let n=0;n<6;n+=2){const group=document.createElement('div');group.className='indexPair';const cap=document.createElement('div');cap.className='pairKey';cap.innerHTML='<i>'+String(n/2+1).padStart(2,'0')+'</i><strong>'+entries[n][2]+'</strong><em>'+entries[n][3]+'</em>';group.append(cap);
- const list=document.createElement('div');list.className='pairRows';for(let i=n;i<n+2;i++){const [cn,en,r]=acts[i];const el=document.createElement('button');el.type='button';el.setAttribute('aria-controls','plateDetails');el.dataset.act=i;el.style.setProperty('--n',i);el.setAttribute('aria-label','预览'+cn+'：'+entries[i][0]);el.innerHTML='<span class="lineMask"><span class="lineIn"><small>'+r+'</small><strong>'+cn+'</strong><em>'+en+'</em><span class="guide">'+entries[i][0]+'</span><i class="pointer" aria-hidden="true">↗</i></span></span>';el.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')select(i)});el.addEventListener('focus',()=>select(i));el.onclick=()=>select(i);list.append(el);buttons.push(el)}group.append(list);nav.append(group)}
- function img(i){if(!cache.has(i)){const im=new Image();im.alt='第'+acts[i][2]+'幕「'+acts[i][0]+'」的实机图版';im.src='plates/0'+(i+1)+'.webp';cache.set(i,im)}return cache.get(i)}
- function showImage(i){const im=img(i),id=++ticket;const swap=()=>{if(id!==ticket||choice!==i||phase==='closed')return;if(activeLayer===im){plate.dataset.ready='true';return}const old=activeLayer;activeLayer=im;layers.append(im);im.className='inked';if(old)old.remove();plate.dataset.ready='true'};plate.dataset.ready='false';(im.decode?im.decode():Promise.resolve()).then(swap,()=>{if(id!==ticket)return;layers.replaceChildren();activeLayer=null;plate.dataset.ready='error'})}
- function select(i,force=false){if(choice===i&&!force)return;choice=i;dialog.dataset.preview=i;const [cn,en]=acts[i];buttons.forEach((el,j)=>{el.setAttribute('aria-pressed',String(i===j));el.setAttribute('aria-current',j===current()?'true':'false');el.style.setProperty('--away',Math.abs(i-j))});$('#folioNr').textContent='0'+(i+1)+' / 06';$('#plateName').textContent=en;$('#plateCaption').textContent=entries[i][1];go.textContent='进入'+cn+' ↗';plate.style.setProperty('--lean',((i%3)-1)*.55+'deg');showImage(i)}
- function state(on){key.setAttribute('aria-expanded',String(on));key.setAttribute('aria-label',on?'收起展谱':'打开展谱');key.querySelector('span').textContent=on?'收起':'展谱'}
- function fly(from,to,dur){keyAnim?.cancel();if(reduced()||!key.animate)return;keyAnim=key.animate([{transform:'translate('+(from.left-to.left)+'px,'+(from.top-to.top)+'px)'},{transform:'translate(0,0)'}],{duration:dur,easing:'cubic-bezier(.22,.76,.25,1)'})}
- function open(){if(phase!=='closed')return;sequence++;phase='open';openingAct=current();origin=key.getBoundingClientRect();dialog.dataset.phase='in';dialog.append(key);state(true);dialog.showModal();page.scrollTop=0;select(openingAct,true);fly(origin,key.getBoundingClientRect(),470);key.focus({preventScroll:true})}
- function close(callback){if(phase==='closed'){callback?.();return}if(phase==='out')return;phase='out';const seq=++sequence;dialog.dataset.phase='out';state(false);const box=key.getBoundingClientRect();keyAnim?.cancel();const end=home.getBoundingClientRect(),base=key.getBoundingClientRect();if(!reduced()&&key.animate){keyAnim=key.animate([{transform:'translate('+(box.x-base.x)+'px,'+(box.y-base.y)+'px)'},{transform:'translate('+(end.x-base.x)+'px,'+(end.y-base.y)+'px)'}],{duration:305,fill:'forwards',easing:'cubic-bezier(.45,0,.7,1)'})}const finish=()=>{if(seq!==sequence)return;phase='closed';dialog.close();keyAnim?.cancel();home.append(key);key.focus({preventScroll:true});callback?.()};clearTimeout(exitTimer);if(reduced())finish();else exitTimer=setTimeout(finish,320)}
- key.onclick=()=>phase==='closed'?open():close();dialog.addEventListener('cancel',e=>{e.preventDefault();close()});go.onclick=()=>{const dest=choice;close(()=>enter(dest))};
- dialog.addEventListener('keydown',e=>{if(phase!=='open')return;const el=e.target.closest('#contents [data-act]');if(el){let i=+el.dataset.act;if(['ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault();const j=e.key==='Home'?0:e.key==='End'?5:(i+(e.key==='ArrowDown'?1:5))%6;buttons[j].focus();return}if(e.key==='ArrowRight'){e.preventDefault();go.focus();return}}else if(e.target===go&&e.key==='ArrowLeft'){e.preventDefault();buttons[choice].focus();return}if(e.key==='Tab'){const nodes=[...dialog.querySelectorAll('button:not([disabled]),a[href]')].filter(x=>x.getClientRects().length);if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus()}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus()}}});
- return {open,close,showMeter(on){$('#liveName').textContent='正在运行：'+acts[current()][0];if(on&&dialog.open)requestAnimationFrame(()=>$('#meter').scrollIntoView({block:'nearest',behavior:'instant'}))}};
+ const $=id=>document.getElementById(id),key=$('indexKey'),home=$('indexHome'),stage=$('spaceStage'),shell=dialog.querySelector('.spaceShell'),tools=$('instruments'),go=$('enterAct');
+ const lenses=[
+ ['编排','一切复杂，始于简单的规则。','#c6b881'],['扰动','一次微小的扰动，足以改变整个世界。','#b86d56'],
+ ['接种','没有谁设计每一道纹路，规则本身孕育了形态。','#c67b86'],['偏转','同一组构件，换个角度，还是同一个世界吗？','#a7beab'],
+ ['塑形','规则定义可能，选择赋予意义。','#cfb9a4'],['回返','当边界消失，创造才刚刚开始。','#abc3cb']];
+ const plates=acts.map((_,i)=>'plates/0'+(i+1)+'.webp');
+ let state='closed',choice=0,carousel=null;
+ const setState=s=>{state=s;dialog.dataset.state=s}, tiles=OrbitTiles($('entryTiles'),{reduced});
+ const gate=OrbitGate({key,dialog,surface:shell,reduced,onClosed:()=>{if(state==='closing')finish()}});
+ function keyState(v){key.setAttribute('aria-expanded',String(v));key.setAttribute('aria-label',v?'收起展谱':'打开展谱');const t=key.querySelector('.gateText');if(t)t.textContent=v?'收起':'展谱'}
+ function focusLens(i){choice=((i%6)+6)%6;const [cn,en,roman]=acts[choice],[verb,phrase,accent]=lenses[choice];
+  dialog.dataset.preview=choice;dialog.style.setProperty('--hueInk',accent);
+  $('lensNo').textContent='0'+(choice+1);$('lensVerb').textContent=verb;$('spaceCN').textContent=cn;$('spaceEN').textContent=en;
+  $('spacePhrase').textContent=phrase;$('enterLabel').textContent='进入'+cn+'实验';$('spaceStatus').textContent='观察 '+roman+'，'+cn+'。'+phrase;
+  buttons.forEach((b,j)=>{b.setAttribute('aria-pressed',String(choice===j));b.setAttribute('aria-current',String(current()===j))});
+  if(!reduced()&&go.animate){for(const el of [$('spaceCN'),$('spaceEN')]){el.getAnimations().forEach(a=>a.cancel());el.animate([{transform:'perspective(600px) rotateX(-35deg) translateY(.16em)',opacity:.2},{transform:'none',opacity:1}],{duration:400,easing:'cubic-bezier(.16,1,.3,1)'})}}
+ }
+ function select(i){if(state==='open')carousel?.select((i+6)%6)}
+ for(let i=0;i<6;i++){const b=document.createElement('button');b.type='button';b.dataset.act=i;b.setAttribute('aria-label','预览'+acts[i][2]+' '+acts[i][0]);b.textContent=acts[i][2];b.onclick=()=>select(i);$('waypoints').append(b);buttons.push(b)}
+ $('phaseNext').onclick=()=>select(choice+1);$('phasePrev').onclick=()=>select(choice-1);
+ function open(){if(state==='entering'||state==='open')return;const fresh=state==='closed';setState('open');if(fresh){dialog.append(key);dialog.showModal();tools.open=false;if(!$('meter').hidden)$('observe').click();key.focus({preventScroll:true});}
+  keyState(true);gate.set(true);if(fresh){carousel=OrbitCarousel(stage,{acts,plates,reduced,onSelect:focusLens});choice=current();carousel.select(choice,true);focusLens(choice)}else carousel?.suspend?.(false)}
+ function close(){if(state!=='open')return;setState('closing');tools.open=false;keyState(false);carousel?.suspend?.(true);gate.set(false)}
+ function toggle(){if(state==='open')close();else if(state!=='entering')open()}
+ function finish(){carousel?.destroy();carousel=null;tools.open=false;tiles.clear();setState('closed');if(dialog.open)dialog.close();home.append(key);keyState(false);key.focus({preventScroll:true})}
+ function ready(i){return new Promise(resolve=>{const until=performance.now()+8500;function sample(){const s=window.BeyondApp?.snapshot();if((s?.act===i&&s.transition===null&&s.ready)||performance.now()>until){resolve();return}setTimeout(sample,35)}sample()})}
+ async function enterFocus(){if(state!=='open')return;const i=choice,rect=carousel?.activeRect?.()||stage.getBoundingClientRect();setState('entering');tools.open=false;carousel?.suspend?.(true);let committed=false;
+  const commit=()=>{if(committed)return;committed=true;dialog.dataset.cover='true';gate.set(false,true);enter(i)};
+  try{await tiles.play({image:plates[i],origin:rect,enter:commit,ready:()=>ready(i)})}catch(err){console.warn('图版转场不可用，直接进入现场',err)}
+  finally{commit();await ready(i);gate.set(false,true);delete dialog.dataset.cover;finish()}}
+ go.onclick=enterFocus;key.onclick=toggle;dialog.addEventListener('cancel',e=>{e.preventDefault();if(tools.open){tools.open=false;tools.querySelector('summary').focus()}else if(state!=='entering')toggle()});
+ dialog.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||state==='entering')return;
+ if(e.key==='Tab'){const able=[...dialog.querySelectorAll('summary,button,a[href],[tabindex="0"]')].filter(el=>el.tabIndex>=0&&getComputedStyle(el).visibility==='visible'&&el.getClientRects().length&&(!tools.contains(el)||tools.open||el.tagName==='SUMMARY'));if(able.length&&((e.shiftKey&&document.activeElement===able[0])||(!e.shiftKey&&document.activeElement===able.at(-1)))){e.preventDefault();(e.shiftKey?able.at(-1):able[0]).focus()}return}
+ if(tools.open&&tools.contains(e.target))return;if(['ArrowRight','ArrowLeft','ArrowUp','ArrowDown','Home','End'].includes(e.key)||/^[1-6]$/.test(e.key)){e.preventDefault();const i=/^[1-6]$/.test(e.key)?+e.key-1:e.key==='Home'?0:e.key==='End'?5:choice+(['ArrowRight','ArrowDown'].includes(e.key)?1:-1);select(i);return}
+ if(e.target===stage&&(e.key==='Enter'||e.key===' ')){e.preventDefault();enterFocus()}});
+ return {open,close,toggle,showMeter(on){$('liveName').textContent='正在运行：'+acts[current()][0];if(on)tools.open=true},motionChanged(){if(state==='open'){carousel?.suspend?.(true);carousel?.suspend?.(false)}}};
 };
